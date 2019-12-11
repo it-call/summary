@@ -1,0 +1,645 @@
+<template>
+  <div class="all">
+    <div class="dashboard-container">
+      <div class="dashboard-text">
+        <el-row :gutter="10">
+          <el-col :xs="1" :sm="1" :md="3" :lg="2" :xl="2">
+            <div class="grid-content bg-purple">
+              按车牌：
+              <el-radio v-model="radio" label="1" @change="test"></el-radio>
+            </div>
+          </el-col>
+          <el-col :xs="2" :sm="2" :md="3" :lg="3" :xl="2">
+            <div class="grid-content bg-purple">
+              按驾驶人：
+              <el-radio v-model="radio" label="2" @change="test"></el-radio>
+            </div>
+          </el-col>
+          <el-col :xs="2" :sm="2" :md="3" :lg="2" :xl="2"><div class="grid-content bg-purple">   起止日期：</div></el-col>
+          <el-col :xs="4" :sm="4" :md="3" :lg="4" :xl="4">
+            <div class="grid-content bg-purple-light">
+           
+              <el-date-picker
+                v-model="model.starttime"
+                type="datetime"
+                placeholder="选择日期时间"
+                :picker-options="startTime"
+                @change="chooseTimeRange"
+                value-format="yyyy-MM-dd HH:mm:ss"
+              ></el-date-picker>
+            </div>
+          </el-col>
+            <el-col :xs="1" :sm="1" :md="1" :lg="1" :xl="2"><div class="grid-content bg-purple">   至</div></el-col>
+          <el-col :xs="4" :sm="4" :md="3" :lg="4" :xl="4">
+            <div class="grid-content bg-purple">
+           
+              <el-date-picker
+                v-model="model.endtime"
+                type="datetime"
+                placeholder="选择日期时间"
+                :picker-options="endTime"
+                @change="chooseTimeRange1"
+                value-format="yyyy-MM-dd HH:mm:ss"
+              ></el-date-picker>
+            </div>
+          </el-col>
+             <el-col :xs="2" :sm="2" :md="3" :lg="3" :xl="2"><div class="grid-content bg-purple"> 企业/车主单位</div></el-col>
+          <el-col :xs="3" :sm="3" :md="3" :lg="3" :xl="3">
+            <div class="grid-content bg-purple-light">
+             
+              <el-select v-model="value" filterable placeholder="请选择" @change="change">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+            </div>
+          </el-col>
+          <el-col :xs="2" :sm="2" :md="2" :lg="2" :xl="1">
+            <div class="grid-content bg-purple">
+              <el-button type="primary" @click="chaxun">查询</el-button>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
+      <div class="main">
+        <el-row :gutter="10">
+  <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24"><div class="grid-content bg-purple">
+         <el-table
+          :data="tableData.slice((currentPage-1)*pagesize,currentPage*pagesize)"
+          style="width: 100%"
+          :header-cell-style="headerStyle"
+          stripe
+          border
+        >
+          <el-table-column prop="num" label="序号" width="120" align="center"></el-table-column>
+          <el-table-column prop="appname" label="APP名称" width="120" align="center" min-width='60px'></el-table-column>
+          <el-table-column prop="apkname" label="包名" width="120" align="center" min-width='60px'></el-table-column>
+          <el-table-column prop="type" label="类型" align="center" min-width='60px'></el-table-column>
+          <el-table-column prop="comp_name" label="运营企业名称" align="center" min-width='60px'></el-table-column>
+          <el-table-column prop="type_number" label="版本号" align="center" min-width='60px'></el-table-column>
+          <el-table-column prop="update_date" label="更新时间" align="center" min-width='60px'></el-table-column>
+          <el-table-column prop="download_num" label="下载量（万）" align="center" min-width='60px'></el-table-column>
+        </el-table>
+    </div></el-col>
+</el-row>
+      </div>
+      <el-pagination
+        class="fy"
+        layout="prev, pager, next,jumper"  
+        @current-change="current_change"
+        :page-count="Math.ceil(total/pagesize)"
+        @size-change="handleSizeChange"
+        :current-page.sync="currentPage3"
+      ></el-pagination>
+    </div>
+  </div>
+</template>
+
+<script>
+import { mapGetters } from "vuex";
+
+export default {
+  name: "Dashboard",
+  data() {
+    return {
+      radio: "2",
+      total: 1, //默认数据总数
+      pagesize: 6, //每页的数据条数
+      currentPage: 1, //默认开始页面
+      currentPage3: 1,
+      currentSeLect: "",
+      testData: "",
+      tableData: [
+        {
+          num: "1",
+          appname: "1喵喵直播",
+          apkname: "1bdkdl",
+          type: "3视频直播",
+          comp_name: "1广大科技公司",
+          type_number: "1V1.2",
+          update_date: "12016-05-02",
+          download_num: "123.6"
+        },
+        {
+          num: "2",
+          appname: "2狗狗直播",
+          apkname: "2bdkdl",
+          type: "2视频直播",
+          comp_name: "2广大科技公司",
+          type_number: "2V1.2",
+          update_date: "22016-05-02",
+          download_num: "223.6"
+        },
+        {
+          num: "3",
+          appname: "3猪猪直播",
+          apkname: "1bdkdl",
+          type: "3视频直播",
+          comp_name: "3广大科技公司",
+          type_number: "3V1.2",
+          update_date: "32016-05-02",
+          download_num: "323.6"
+        },
+        {
+          num: "4",
+          appname: "4二哈直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 5,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 6,
+          appname: "4金毛直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 7,
+          appname: "4熊猫直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 8,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 9,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 10,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 11,
+          appname: "4斗鱼直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 12,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 13,
+          appname: "4哈哈直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 14,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 15,
+          appname: "4虎牙直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 16,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 17,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 18,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 19,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 20,
+          appname: "1喵喵直播",
+          apkname: "1bdkdl",
+          type: "3视频直播",
+          comp_name: "1广大科技公司",
+          type_number: "1V1.2",
+          update_date: "12016-05-02",
+          download_num: "123.6"
+        },
+        {
+          num: 21,
+          appname: "2狗狗直播",
+          apkname: "2bdkdl",
+          type: "2视频直播",
+          comp_name: "2广大科技公司",
+          type_number: "2V1.2",
+          update_date: "22016-05-02",
+          download_num: "223.6"
+        },
+        {
+          num: 22,
+          appname: "3猪猪直播",
+          apkname: "1bdkdl",
+          type: "3视频直播",
+          comp_name: "3广大科技公司",
+          type_number: "3V1.2",
+          update_date: "32016-05-02",
+          download_num: "323.6"
+        },
+        {
+          num: 23,
+          appname: "4二哈直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 24,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 25,
+          appname: "4金毛直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 26,
+          appname: "4熊猫直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 27,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 28,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 29,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 30,
+          appname: "4斗鱼直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 31,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 32,
+          appname: "4哈哈直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 33,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 34,
+          appname: "4虎牙直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 35,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 36,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 37,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        },
+        {
+          num: 38,
+          appname: "4喵喵直播",
+          apkname: "4bdkdl",
+          type: "4视频直播",
+          comp_name: "4广大科技公司",
+          type_number: "4V1.2",
+          update_date: "42016-05-02",
+          download_num: "423.6"
+        }
+      ],
+      options: [
+        {
+          value: "123.6",
+          label: "123.6"
+        },
+        {
+          value: "选项2",
+          label: "双皮奶"
+        },
+        {
+          value: "423.6",
+          label: "423.6"
+        },
+        {
+          value: "223.6",
+          label: "223.6"
+        },
+        {
+          value: "选项5",
+          label: "北京烤鸭"
+        }
+      ],
+      value: "",
+      model: {
+        starttime: "",
+        endtime: ""
+      },
+      /* start 开始时间小于今天,结束时间不能大于开始时间 */
+      startTime: {
+        disabledDate: time => {
+          if (this.endtime) {
+            return time.getTime() > new Date(this.endtime).getTime();
+          } else {
+            return time.getTime() > Date.now();
+          }
+        }
+      },
+      endTime: {
+        disabledDate: time => {
+          if (this.model.starttime) {
+            return (
+              time.getTime() > Date.now() ||
+              time.getTime() < new Date(this.model.starttime).getTime()
+            );
+          } else {
+            return time.getTime() > Date.now();
+          }
+        }
+      }
+    };
+  },
+  computed: {
+    ...mapGetters(["name"])
+  },
+  methods: {
+    change(x) {
+      console.log(x);
+      this.currentSeLect = x;
+    },
+    chaxun() {
+      this.tableData = this.testData;
+      var _this = this;
+      var nowTable;
+      nowTable = this.tableData.filter(item => {
+        return item.download_num == _this.currentSeLect;
+      });
+      this.tableData = nowTable;
+    },
+    test(x) {
+      console.log("触发事件", x);
+    },
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`);
+    },
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`);
+    },
+    current_change: function(currentPage) {
+      this.currentPage = currentPage;
+    },
+    headerStyle() {
+      return "background:#B0BBD2FF";
+    },
+    chooseTimeRange(t) {
+      console.log(t);
+      this.start_time = t;
+    },
+    chooseTimeRange1(t) {
+      console.log(t);
+      this.end_time = t;
+    }
+  },
+  mounted() {
+    this.total = this.tableData.length;
+  },
+  created() {
+    this.testData = this.tableData;
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+</style>
+<style scoped>
+.el-date-editor.el-input, .el-date-editor.el-input__inner {
+    width: 100%;
+}
+.el-col {
+  border-radius: 4px;
+  height: 100%;
+}
+
+.grid-content {
+  border-radius: 4px;
+  min-height: 36px;
+  height: 100%;
+  text-align:center;
+}
+.dashboard-container {
+  box-sizing: border-box;
+  padding-left: 10px;
+    
+}
+.dashboard-text {
+  font-size: 16px;
+  height: 60px;
+  line-height: 46px;
+  margin-top: 30px;
+}
+.all {
+  width: 100%;
+  /* height:100%; */
+  overflow: auto;
+  padding: 10px;
+  min-height: calc(100vh - 50px);
+}
+>>> .el-radio__label {
+  display: none;
+}
+.main {
+  width: 100%;
+  height: 550px;
+  margin-top: 30px;
+}
+>>> .el-pagination {
+  /* position:relative;left:35%; */
+  margin-left: 35%;
+}
+</style>

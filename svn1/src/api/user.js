@@ -1,0 +1,34 @@
+import request from '@/utils/request'
+import qs from 'qs'
+
+export function login(data) {
+	return request({
+    url: '/login',
+    method: 'post',
+    data:qs.stringify(data),
+	headers: {'Content-Type':'application/x-www-form-urlencoded'}
+})
+}
+
+export function getInfo(token) {
+  return request({
+    url: '/user/info',
+    method: 'post',
+    params: { token }
+  })
+}
+
+export function logout() {
+  return request({
+    url: '/user/logout',
+    method: 'post'
+  })
+}
+
+export function addUser(data){
+	return request({
+		url:'/user',
+		method:'post',
+		data
+	})
+}

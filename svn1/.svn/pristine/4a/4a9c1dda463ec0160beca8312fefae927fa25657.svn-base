@@ -1,0 +1,235 @@
+<template>
+  <div class="navbar">
+    <hamburger
+      :is-active="sidebar.opened"
+      class="hamburger-container"
+      @toggleClick="toggleSideBar"
+    />
+    <span class="nav-title">移动行检仪实时管控平台</span>
+    <svg-icon icon-class="map" class="map" />
+    <div class="daohang">
+      <el-tabs v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane label="地图" name="first"></el-tab-pane>
+        <el-tab-pane label="管理" name="second"></el-tab-pane>
+        <el-tab-pane label="数据" name="third"></el-tab-pane>
+        <el-tab-pane label="消息" name="fourth"></el-tab-pane>
+        <el-tab-pane label="执法站" name="five"></el-tab-pane>
+        <el-tab-pane label="监测站" name="six"></el-tab-pane>
+      </el-tabs>
+    </div>
+    <div class="right-menu">
+      <el-dropdown class="avatar-container" trigger="click">
+        <div class="avatar-wrapper">
+          <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar" /> -->
+            <img src="https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80"  class="user-avatar">
+          <i class="el-icon-caret-bottom" />
+        </div>
+        <el-dropdown-menu slot="dropdown" class="user-dropdown">
+          <router-link to="/">
+            <el-dropdown-item>Home</el-dropdown-item>
+          </router-link>
+          <a target="_blank" href="https://github.com/PanJiaChen/vue-admin-template/">
+            <el-dropdown-item>Github</el-dropdown-item>
+          </a>
+          <a target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/#/">
+            <el-dropdown-item>Docs</el-dropdown-item>
+          </a>
+          <el-dropdown-item divided>
+            <span style="display:block;" @click="logout">Log Out</span>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+    </div>
+  </div>
+</template>
+
+<script>
+import { mapGetters } from "vuex";
+import Breadcrumb from "@/components/Breadcrumb";
+import Hamburger from "@/components/Hamburger";
+//横向导航条
+export default {
+  data() {
+    return {
+      activeName: "second"
+    };
+  },
+  components: {
+    Breadcrumb,
+    Hamburger
+  },
+  computed: {
+    ...mapGetters(["sidebar", "avatar"])
+  },
+  methods: {
+    toggleSideBar() {
+      this.$store.dispatch("app/toggleSideBar");
+    },
+    handleClick(tab, event) {
+      switch (tab.name) {
+        // case "first":
+        //   this.$router.push("/first/first1");
+        //   break;
+        case "second":
+          this.$router.push("/dashboard");
+          break;
+        // case "third":
+        //   this.$router.push("/data/data1");
+        //   break;
+        // case "fourth":
+        //   this.$router.push("/news/newdata");
+      }
+    },
+    async logout() {
+      await this.$store.dispatch("user/logout");
+      this.$router.push(`/login?redirect=${this.$route.fullPath}`);
+      console.log(this.$router, "登录出去");
+    }
+  },
+  mounted() {
+  //   console.log(this.$router.currentRoute.name, "名字");
+  //   if (this.$router.currentRoute.name == "data1") {
+  //     //  console.log('888');
+  //     this.activeName = "third";
+  //  $('.el-tabs__active-bar').css('margin-left','90px')
+  //   }
+  //   if (this.$router.currentRoute.name == "newdata") {
+  //     this.activeName = "fourth";
+  //      $('.el-tabs__active-bar').css('margin-left','120px')
+  //   }
+  //   if (this.$router.currentRoute.name == "Dashboard") {
+  //     this.activeName = "second";
+  //       $('.el-tabs__active-bar').css('margin-left','60px')
+  //   } else if (this.$router.currentRoute.name == "first1") {
+  //     this.activeName = "first";
+  //     $('.el-tabs__active-bar').css('transform','translateX(30px)')
+  //   }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.navbar {
+  height: 50px;
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  .nav-title {
+    position: absolute;
+    left: 100px;
+    font-size: 20px;
+    color: #5c9eff;
+    line-height: 50px;
+  }
+  .map {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+  }
+  .daohang {
+    position: fixed;
+    left: 50%;
+    top: 0;
+    width: 38%;
+    height: 50px;
+    color: #72abff;
+    line-height: 50px;
+    font-size: 24px;
+    >>> .el-tabs__nav-wrap::after {
+      background-color: #fff;
+    }
+    >>>.el-tabs__item {
+      margin-left:30px;
+    }
+  }
+  .daohang > li {
+    float: left;
+    width: 15%;
+    height: 50px;
+    line-height: 50px;
+    list-style: none;
+  }
+  .hamburger-container {
+    line-height: 46px;
+    height: 100%;
+    float: left;
+    cursor: pointer;
+    transition: background 0.3s;
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.025);
+    }
+  }
+
+  .breadcrumb-container {
+    float: left;
+  }
+
+  .right-menu {
+    float: right;
+    height: 100%;
+    line-height: 50px;
+
+    &:focus {
+      outline: none;
+    }
+
+    .right-menu-item {
+      display: inline-block;
+      padding: 0 8px;
+      height: 100%;
+      font-size: 18px;
+      color: #5a5e66;
+      vertical-align: text-bottom;
+
+      &.hover-effect {
+        cursor: pointer;
+        transition: background 0.3s;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.025);
+        }
+      }
+    }
+
+    .avatar-container {
+      margin-right: 30px;
+
+      .avatar-wrapper {
+        margin-top: 5px;
+        position: relative;
+
+        .user-avatar {
+          cursor: pointer;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+        }
+
+        .el-icon-caret-bottom {
+          cursor: pointer;
+          position: absolute;
+          right: -20px;
+          top: 25px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+>>>.el-tabs__active-bar{
+  display:none;
+}
+>>>.el-tabs__nav{
+  left:22px;
+}
+>>>.el-tabs__nav-prev{
+  display:none;
+}
+>>>.el-icon-arrow-right:before {
+    content: "\E604";
+    display:none;
+}
+</style>

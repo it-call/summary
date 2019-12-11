@@ -1,0 +1,43 @@
+<template>
+  <div class="mains">
+      <div class="title">
+        <Navbar/>
+      </div>
+      <div class="main">
+        <test/>
+      </div>
+  </div>
+</template>
+
+<script>
+//这里加载所有的模块；
+import test from './test'
+import {Navbar } from './components'
+export default{
+  data(){
+    return {
+     
+    }
+  },
+   components:{
+        test,
+        Navbar
+      }
+}
+</script>
+
+<style lang="scss" scoped>
+ .mains{
+   width:100%;
+   height:100%;
+ }
+ .title{
+   width:100%;
+   height:50px;
+ }
+ .main{
+   width:100%;
+   height:calc(100% - 50px);
+   overflow:hidden;
+ }
+</style>

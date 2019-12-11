@@ -1,0 +1,412 @@
+<template>
+  <div class="car_info_edit">
+    <div class="search">
+      <el-input v-model="input_car_num" placeholder="请输入车牌" clearable />
+      <el-button type="primary" class="sear" @click="search()">查询</el-button>
+    </div>
+    <div class="car-title">
+      <h4>参数管理</h4>
+    </div>
+
+    <div class="main">
+      <div class="title">
+        <div class="container_table">
+          <el-table
+            :data="tableData"
+            style="width: 100%"
+            :header-cell-style="headerStyle"
+            stripe
+            border
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column type="selection" width="60" align="center" />
+            <el-table-column
+              type="index"
+              :index="indexMethod"
+              width="100"
+              label="序号"
+              align="center"
+            />
+
+            <el-table-column prop="name" label="参数名称" width="240" align="center">
+              <template slot-scope="{ row, $index }">
+                <input v-if="showEdit[$index]" v-model="row.name" class="edit-cell" >
+                <span v-if="!showEdit[$index]">{{ row.name }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="id" label="ID" width="120" align="center" />
+
+            <el-table-column prop="value" label="参数值" width="300" align="center">
+              <template slot-scope="{ row, $index }">
+                <input v-if="showEdit[$index]" v-model="row.value" class="edit-cell" >
+                <span v-if="!showEdit[$index]">{{ row.value }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="type" label="参数类型" width="300" align="center">
+              <template slot-scope="{ row, $index }">
+                <input v-if="showEdit[$index]" v-model="row.type" class="edit-cell" >
+                <span v-if="!showEdit[$index]">{{ row.type }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="isShare" label="是否共享" width="300" align="center">
+              <template slot-scope="{ row, $index }">
+                <input v-if="showEdit[$index]" v-model="row.isShare" class="edit-cell" >
+                <span v-if="!showEdit[$index]">{{ row.isShare }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="编辑" align="center">
+              <template slot-scope="{ row, $index }">
+                <el-button
+                  v-if="showBtn[$index]"
+                  type="text"
+                  size="small"
+                  @click.native="handleUpdate($index, row)"
+                >保存</el-button>
+                <el-button
+                  v-if="showBtn[$index]"
+                  type="text"
+                  size="small"
+                  @click.native="handleCancel($index, row)"
+                >取消</el-button>
+
+                <el-button
+                  v-if="!showBtn[$index]"
+                  type="text"
+                  size="small"
+                  @click.native="handleEdit($index, row)"
+                >编辑</el-button>
+                <el-button
+                  v-if="!showBtn[$index]"
+                  type="text"
+                  size="small"
+                  @click.native="handleDelete($index, row)"
+                >删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+      <div class="submit">
+        <el-button type="primary" @click="submitAll">批量提交</el-button>
+      </div>
+      <el-pagination
+        class="fy"
+        layout="prev, pager, next,jumper"
+        :total="total"
+        :current-page.sync="activePage"
+        @current-change="current_change"
+        @size-change="handleSizeChange"
+      />
+    </div>
+  </div>
+</template>
+
+<script>
+import Vue from 'vue';
+
+export default {
+  data() {
+    return {
+      // 筛选条件
+      options: [
+        {
+          value: '粤行盒子',
+          label: '粤行盒子'
+        },
+        {
+          value: '视频盒子',
+          label: '视频盒子'
+        }
+      ],
+
+      input_car_num: '',
+      id: '',
+
+      // value_input: '',
+      // value_date: '',
+
+      showEdit: [], // 显示编辑框
+      showBtn: [],
+      showBtnOrdinary: true,
+
+      // radio: '1',
+      total: 1, // 默认数据总数
+      pagesize: 10, // 每页的数据条数
+      currentPage: 1, // 默认开始页面
+      istag: true,
+      activePage: 1,
+
+      searchData: [],
+      tableData: []
+    }
+  },
+  updated() {
+    // console.log(this.radio)
+  },
+  created() {
+    this.getData()
+  },
+  mounted() {
+    this.total = this.tableData.length
+    this.search()
+  },
+  methods: {
+    test(x) {
+      console.log('触发事件', x)
+    },
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`)
+    },
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`)
+    },
+    current_change: function(currentPage) {
+      this.currentPage = currentPage
+    },
+    headerStyle() {
+      return 'background:#B0BBD2FF';
+    },
+    indexMethod(index) {
+      return (this.activePage - 1) * this.pagesize + index + 1
+    },
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+
+      console.log(this.multipleSelection, '测试选中')
+    },
+    // 点击编辑
+    handleEdit(index, row) {
+      this.showEdit[index] = true
+      this.showBtn[index] = true
+      this.$set(this.showEdit, row, true)
+      this.$set(this.showBtn, row, true)
+
+      // console.log(this.tableData[index].label, '测试一下')
+
+      // 取消编辑数据还原
+      localStorage.setItem('obj', JSON.stringify(this.tableData))
+    },
+
+    // 取消编辑
+    handleCancel(index, row) {
+      // 数据还原
+      const Item = JSON.parse(localStorage.getItem('obj'))
+      this.tableData = Item
+
+      // this.getContentList()
+      this.showEdit[index] = false
+      this.showBtn[index] = false
+    },
+
+    // 点击保存
+    handleUpdate(index, val) {
+      this.id = val.id
+      this.tableData.map((i, index) => {
+        i.show = false
+        Vue.set(this.tableData, index, i)
+      })
+      this.showEdit[index] = false
+      this.showBtn[index] = false
+
+      this.submit()
+    },
+
+    // 批量保存
+    submitAll(val, index) {
+      console.log(this.multipleSelection, '测试批量保存')
+      this.multipleSelection.map((i, index) => {
+        i.show = false
+        Vue.set(this.multipleSelection, index, i)
+      })
+      this.showEdit[index] = false
+      this.showBtn[index] = false
+      this.submit()
+    },
+
+    // 点击删除
+    handleDelete(index) {
+      this.tableData.splice(index, 1)
+    },
+
+    search() {
+      // console.log(this.input, this.value_input, '测试一下')
+      // if (this.value_input == '') {
+      //   console.log('再测试')
+      // } else {
+      //   console.log(this.value_input)
+      // }
+      // this.searchData = []
+      // if (this.input === '') {
+      //   if (this.value_input == null) {
+      //     for (let i = 0; i < this.tableData.length; i++) {
+      //       this.searchData.push(this.tableData[i])
+      //     }
+      //     console.log(this.searchData, '无无')
+      //   } else {
+      //     for (let i = 0; i < this.tableData.length; i++) {
+      //       if (
+      //         this.tableData[i].equipment_type.indexOf(this.value_input) !== -1
+      //       ) {
+      //         this.searchData.push(this.tableData[i])
+      //       }
+      //     }
+      //     console.log(this.searchData, '无有')
+      //   }
+      // } else {
+      //   var re = /^[\u4e00-\u9fa5]{1}[A-Z]{1}[A-Z_0-9]{5}$/
+      //   if (re.test(this.input)) {
+      //     // console.log('车牌输入正确')
+      //     for (let i = 0; i < this.tableData.length; i++) {
+      //       if (this.tableData[i].car_number.indexOf(this.input) !== -1) {
+      //         if (this.value_input == null) {
+      //           this.searchData = this.tableData
+      //           console.log(this.searchData, '有无')
+      //         } else {
+      //           if (
+      //             this.tableData[i].equipment_type.indexOf(this.value_input) !==
+      //             -1
+      //           ) {
+      //             this.searchData.push(this.tableData[i])
+      //             console.log(this.searchData, '有有')
+      //           }
+      //         }
+      //       }
+      //     }
+      //   } else {
+      //     alert('请输入正确的车牌号码！')
+      //   }
+      // }
+      // for (let i = 0; i < this.tableData.length; i++) {
+      //   if (this.tableData[i].car_number.indexOf(this.input) != -1) {
+      //     if (
+      //       this.tableData[i].equipment_type.indexOf(this.value_input) != -1
+      //     ) {
+      //       this.searchData.push(this.tableData[i])
+      //     }
+      //   }
+      // }
+    },
+
+    getData() {
+      const url = this.HOST + '/device';
+      console.log(url)
+      this.$axios
+        .get(url)
+        .then(res => {
+          // console.log(res.data.data)
+          this.tableData = res.data.data
+          console.log(this.tableData, '测试获取数据')
+          this.formatData()
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    },
+    submit() {
+      console.log(this.id, '测试id')
+      const url = this.HOST + '/device';
+      this.$axios
+        .put(
+          url,
+          {
+            data: {
+              id: this.id,
+              type: this.type
+            }
+          },
+          { headers: { 'Content-Type': 'application/json' }}
+        )
+        .then(res => {
+          console.log('put成功')
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    },
+    // 判断是共享还是非共享
+    isShafeData() {
+      if (this.input_car_num === '') {
+        this.isShare = 1
+      } else {
+        this.isShare = 0
+      }
+    },
+    formatData() {
+      for (let i = 0; i < this.tableData.length; i++) {
+        console.log(this.tableData[i].type, '测试')
+        if (this.tableData[i].type === 1) {
+          this.tableData[i].type = '字符';
+        } else {
+          this.tableData[i].type = '数字';
+        }
+        if (this.tableData[i].isShare === 1) {
+          this.tableData[i].isShare = '共享';
+        } else {
+          this.tableData[i].isShare = '不共享';
+        }
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.car_info_edit {
+  background: #edf5fb;
+  padding: 20px;
+}
+.line {
+  text-align: center;
+}
+.search {
+  line-height: 100px;
+  box-sizing: border-box;
+  /* padding-left: 30px; */
+}
+>>> .el-radio__label {
+  display: none;
+}
+.sear {
+  width: 90px;
+  margin-left: 50px;
+}
+.car-title {
+  width: 100%;
+  height: 50px;
+  text-align: center;
+  font-weight: 400;
+  color: rgba(92, 158, 255, 1);
+}
+.main {
+  /* width: 100%; */
+  min-height: calc(100vh - 232px);
+}
+.fy {
+  position: relative;
+  left: 90%;
+  bottom: -5%;
+  transform: translate(-50%, -65%);
+}
+.submit {
+  padding: 40px 0;
+}
+</style>
+<style>
+.car_info_edit .el-table th > .cell {
+  color: #fff;
+}
+.car_info_edit .el-table--striped .el-table__body tr.el-table__row--striped td {
+  background: #f2f2f2;
+}
+.car_info_edit .el-input {
+  width: unset;
+}
+.car_info_edit .el-table td {
+  padding: 6px 0;
+}
+.car_info_edit input.edit-cell {
+  padding: 5px;
+}
+</style>

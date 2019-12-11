@@ -1,0 +1,201 @@
+<template>
+  <div class="first1">
+    <div class="maplist">
+      <!-- <el-input placeholder="请输入内容" suffix-icon="el-icon-search" v-model="input2" class="mapSearch"></el-input> -->
+      <el-autocomplete
+        class="mapSearch"
+        suffix-icon="el-icon-search"
+        clearable
+        v-model="mapLocation.address"
+        :fetch-suggestions="querySearch"
+        placeholder="请输入内容"
+        :trigger-on-focus="false"
+        @select="handleSelect"
+      />
+      <!-- <button style="margin-top:30px;" @click="test1">test1</button> -->
+      <el-card class="box-card">
+  <div v-for="o in 4" :key="o" class="text item">
+    {{'列表内容 ' + o }}
+  </div>
+</el-card>
+    </div>
+    <div class="mapdata">
+      <baidu-map
+        class="bm-view"
+        :center="mapCenter"
+        :zoom="mapZoom"
+        :scroll-wheel-zoom="true"
+        @ready="handlerBMap"
+      />
+      <div v-drag class="alert" >
+        <p><i class="el-icon-edit"></i>&nbsp;速度</p>
+        <p><i class="el-icon-edit"></i>报警</p>
+        <p><i class="el-icon-edit"></i>状态</p>
+        <p><i class="el-icon-edit"></i>地址</p>
+        <p><i class="el-icon-edit"></i>经纬度</p>
+        <p><i class="el-icon-edit"></i>定位时间</p>
+        <p><i class="el-icon-edit"></i>视频回放</p>
+        <p><i class="el-icon-edit"></i>实时视频</p>
+        <p><i class="el-icon-edit"></i>语音播放</p>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import { log } from "util";
+export default {
+  data() {
+    return {
+      input2: "",
+      mapZoom: 15,
+      mapCenter: { lng: 0, lat: 0 },
+      mapLocation: {
+        address: undefined,
+        coordinate: undefined
+      }
+    };
+  },
+  // 吴川的坐标：{lng: 110.78645, lat: 21.447263}
+  mounted() {
+    $(".hamburger-container").hide();
+  },
+  methods: {
+    handlerBMap({ BMap, map }) {
+      this.BMap = BMap;
+      this.map = map;
+      console.log("初始化");
+      this.mapCenter.lng = 113.271429;
+      this.mapCenter.lat = 23.135336;
+      this.mapZoom = 10;
+    },
+    querySearch(queryString, cb) {
+      console.log("cb参数是什么", cb);
+      var that = this;
+      var myGeo = new this.BMap.Geocoder(); //获取用户的地址解析
+      console.log("这是地址？", myGeo);
+      myGeo.getPoint(
+        queryString,
+        function(point) {
+          console.log("回调里面的point", point);
+          if (point) {
+            console.log("条件一");
+            that.mapLocation.coordinate = point;
+            that.makerCenter(point);
+          } else {
+            console.log("条件二");
+            that.mapLocation.coordinate = null;
+          }
+        },
+        this.locationCity
+      );
+      var options = {
+        onSearchComplete: function(results) {
+          if (local.getStatus() === 0) {
+            var s = [];
+            for (var i = 0; i < results.getCurrentNumPois(); i++) {
+              var x = results.getPoi(i);
+              var item = { value: x.title, point: x.point };
+              console.log(item, 222);
+              s.push(item);
+              console.log(s, 333);
+              cb(s);
+            }
+          } else {
+            cb();
+          }
+        }
+      };
+      console.log("options是什么", options);
+      var local = new this.BMap.LocalSearch(this.map, options); //位置，周边和范围检索；
+      local.search(queryString); //根据关键词进行检索
+    },
+    handleSelect(item) {
+      var { point } = item;
+      console.log(item, 888);
+      this.mapLocation.coordinate = point;
+      console.log("经纬度？", point);
+      this.makerCenter(point);
+    },
+    makerCenter(point) {
+      if (this.map) {
+        this.map.clearOverlays(); //清除地图的覆盖物
+        this.map.addOverlay(new this.BMap.Marker(point)); //覆盖物红点添加到地图
+        this.mapCenter.lng = point.lng;
+        this.mapCenter.lat = point.lat;
+        this.mapZoom = 15;
+      }
+    },
+    test1() {
+      $(".alert").show();
+      this.makerCenter({ lng: 110.78645, lat: 21.447263 });
+    },
+  },
+};
+</script>
+<style scoped>
+.text {
+    font-size: 14px;
+  }
+
+  .item {
+    padding: 18px 0;
+  }
+
+  .box-card {
+    width:208px;
+  }
+  .el-card{
+    border:none;
+  }
+  .el-card.is-always-shadow, .el-card.is-hover-shadow:focus, .el-card.is-hover-shadow:hover {
+    -webkit-box-shadow: none;
+    box-shadow:none;
+}
+.first1 {
+  width: 100%;
+  height: calc(100% - 50px);
+  background: #58bc58;
+}
+.map {
+  width: 100%;
+  height: 100%;
+}
+.maplist {
+  width: 210px;
+  height: 100%;
+  background-color:#fff;
+  position: fixed;
+}
+.mapdata {
+  width: calc(100% - 210px);
+  height: 100%;
+  background: #58bc58;
+  position: fixed;
+  margin-left: 210px;
+}
+.mapSearch {
+  position: relative;
+  font-size: 14px;
+  display: inline-block;
+  width: 88%;
+  margin-left: 11px;
+  margin-top: 5px;
+}
+.bm-view {
+  width: 100%;
+  height: 100%;
+}
+.alert {
+  width: 302px;
+  height: 337px;
+  background: #6e93c9;
+  position: absolute;
+  bottom: 200px;
+  right: 100px;
+  display: none;
+}
+.alert>p{
+  padding-left:30px;
+  color:#ffff;
+}
+</style>

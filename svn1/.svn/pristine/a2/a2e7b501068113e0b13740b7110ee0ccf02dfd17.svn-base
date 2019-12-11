@@ -1,0 +1,135 @@
+<template>
+  <div class="data1">
+    <div class="data-left">
+      <el-row class="tac">
+        <el-col :span="12" class="daohang">
+          <el-menu
+            :default-active=activeIndex
+            :default-openeds='openeds'
+            class="el-menu-vertical-demo"
+            @open="handleOpen"
+            @close="handleClose"
+            background-color="#545c64"
+            text-color="#fff"
+            active-text-color="#ffd04b"
+          >
+            <el-submenu index="1">
+              <template slot="title">
+                <i class="el-icon-location"></i>
+                <span>记录规范使用率</span>
+              </template>
+              <el-submenu index="1-4">
+                <template slot="title">选项4</template>
+                <el-menu-item index="1-4-1" @click="dataList1()">选项1</el-menu-item>
+              </el-submenu>
+            </el-submenu>
+            <el-menu-item index="2">
+              <i class="el-icon-menu"></i>
+              <span slot="title" @click="dataList2()">记录仪速度对比</span>
+            </el-menu-item>
+            <el-menu-item index="3">
+              <i class="el-icon-document"></i>
+              <span slot="title">疲劳驾驶分析</span>
+            </el-menu-item>
+            <el-menu-item index="4">
+              <i class="el-icon-setting"></i>
+              <span slot="title">记录仪屏蔽或关闭分析</span>
+            </el-menu-item>
+            <el-menu-item index="5">
+              <i class="el-icon-menu"></i>
+              <span slot="title">超速(行检仪速度)</span>
+            </el-menu-item>
+            <el-menu-item index="6">
+              <i class="el-icon-document"></i>
+              <span slot="title">超速路段</span>
+            </el-menu-item>
+            <el-menu-item index="7">
+              <i class="el-icon-setting"></i>
+              <span slot="title">不按车道行驶</span>
+            </el-menu-item>
+            <el-menu-item index="8">
+              <i class="el-icon-document"></i>
+              <span slot="title">语音警告(类别及次数)</span>
+            </el-menu-item>
+            <el-menu-item index="9">
+              <i class="el-icon-setting"></i>
+              <span slot="title">违停分析统计</span>
+            </el-menu-item>
+          </el-menu>
+        </el-col>
+      </el-row>
+    </div>
+    <div class="data-right">
+      <router-view></router-view>
+    </div>
+  </div>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      title: "",
+      openeds: [],
+      activeIndex:3
+    };
+  },
+  methods: {
+    handleClick(tab, event) {
+      console.log(tab, event);
+    },
+    handleOpen(key, keyPath) {
+      console.log(key, keyPath ,'打开');
+      this.openeds=keyPath;
+      
+    },
+    handleClose(key, keyPath) {
+      console.log(key, keyPath,'关闭');
+        this.openeds=keyPath;
+    },
+    dataList1() {
+      this.$router.push("/data/data1/datalist1");
+    },
+    dataList2() {
+      console.log(666);
+      this.$router.push("/data/data1/datalist2");
+    }
+  },
+  created() {
+    console.log(this.activeIndex,'默认索引');
+    
+    $(".hamburger-container").hide();
+    console.log( this.$router.currentRoute.name);
+    if(this.$router.currentRoute.name=='datalist1'){
+      this.openeds=["1", "1-4"];
+      this.activeIndex='1-4-1'
+    }else{
+      this.openeds=[]
+      this.activeIndex="3"
+    }
+  
+  }
+};
+</script>
+<style scoped>
+.data1 {
+  width: 100%;
+  height: calc(100% - 50px); 
+}
+.data-left {
+  width: 210px;
+  position: fixed;
+  height: 100%;
+  background-color: rgb(84, 92, 100);
+}
+.data-right {
+  width: calc(100% - 210px);
+  height: 100%;
+  background: #58bc58;
+  position: fixed;
+  margin-left: 210px;
+}
+.daohang {
+  width: 101%;
+  height: 100%;
+}
+</style>
